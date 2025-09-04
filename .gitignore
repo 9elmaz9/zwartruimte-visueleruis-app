@@ -1,7 +1,13 @@
+# виртуальное окружение
+venv/
+__pycache__/
+*.pyc
+
+# большие файлы
 uploads/
 videos/
 *.csv
-temp_audio.wav
-__pycache__/
-*.pyc
+*.wav
+
+# системное
 .DS_Store

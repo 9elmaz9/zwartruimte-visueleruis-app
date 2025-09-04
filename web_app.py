@@ -1,12 +1,12 @@
-# web_app.py — фронт без автосканирования, со спиннером и % прогресса (псевдо), PRG, удалением и CSV
-# Запуск: python web_app.py → http://127.0.0.1:5009
+# web_app.py — Frontend zonder autoscan, met spinner en % voortgang (pseudo), PRG, verwijderen en CSV
+# Start:: python web_app.py → http://127.0.0.1:5009
 
 import os
 from datetime import datetime
 from flask import Flask, request, redirect, url_for, render_template_string, flash, session
 from werkzeug.utils import secure_filename
 
-# --- безопасный импорт analyzer_core ---
+# --- veilige import analyzer_core ---
 import sys, importlib
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 if BASE_DIR not in sys.path:
@@ -15,7 +15,7 @@ if BASE_DIR not in sys.path:
 try:
     core = importlib.import_module("analyzer_core")
 except Exception as e:
-    raise RuntimeError("Не удалось импортировать analyzer_core.py рядом с web_app.py") from e
+    raise RuntimeError("Het is niet gelukt om analyzer_core.py te importeren naast web_app.py") from e
 
 REQUIRED = [
     "get_video_duration_seconds","detect_black_segments","detect_glitches",
@@ -25,7 +25,7 @@ REQUIRED = [
 missing = [n for n in REQUIRED if not hasattr(core, n)]
 if missing:
     raise RuntimeError(f"В analyzer_core.py отсутствует: {missing}")
-# --- конец импорта ---
+# --- Einde van de import ---
 
 ALLOWED_EXT = {".mp4", ".mov", ".mkv", ".avi", ".m4v"}
 UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
@@ -34,7 +34,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(STATIC_DIR, exist_ok=True)
 
 app = Flask(__name__, static_folder=STATIC_DIR)
-app.secret_key = "dev-key-change-me"  # замени на свой
+app.secret_key = "elmaz"  # mijn
 
 PAGE = r"""
 <!doctype html>
@@ -60,7 +60,7 @@ PAGE = r"""
     details summary { cursor:pointer; margin-top:8px; }
     code { background:#0f1115; padding:2px 6px; border-radius:6px; }
 
-    /* Кнопки — твой цвет */
+    /* Knoppen  */
     .btn {
       display:inline-block; padding:10px 20px; border-radius:30px;
       background:#00c9a7; color:white; text-decoration:none; border:none;
@@ -78,7 +78,7 @@ PAGE = r"""
     .drop { border:2px dashed #2d333b; border-radius:14px; padding:18px; text-align:center; background:#0f1115; }
     .drop.drag { border-color:#00c9a7; background:#0f1220; }
 
-    /* Список выбранных файлов */
+    /* Lijst van geselecteerde bestanden */
     .picked-item { display:flex; align-items:center; justify-content:space-between;
       gap:10px; padding:6px 10px; border:1px solid #23262d; background:#0f1115;
       border-radius:10px; margin-top:6px; font-size:14px; }
@@ -86,13 +86,13 @@ PAGE = r"""
       padding:4px 10px; cursor:pointer; font-weight:600; }
     .picked-remove:hover { background:#a23f48; }
 
-    /* Верхний баннер */
+    /* Bovenste banner */
     .hero {
   width: 70%;
   height: auto;
   display: block;
-  margin-left: 0;       /* прижать к левому краю */
-  margin-right: auto;   /* убрать автоцентрирование */
+  margin-left: 0;       /* to the left side  */
+  margin-right: auto;   /* without auticentreren */
   margin-top: 10px;
   margin-bottom: 20px;
   border: none;
@@ -103,7 +103,7 @@ PAGE = r"""
     .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:12px; }
     .top-actions { display:flex; gap:8px; flex-wrap:wrap; }
 
-    /* Полноэкранный оверлей со спиннером и % */
+/* Volledig scherm overlay met spinner en % */
     #overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,.55);
       display: none; align-items: center; justify-content: center; z-index: 9999;
@@ -124,7 +124,7 @@ PAGE = r"""
     }
     .ovl-text { color:#c7d0db; font-size:14px; }
 
-    /* +++ проценты + прогресс-бар +++ */
+/* +++ procenten + voortgangsbalk +++ */
     .ovl-pct { font-weight:700; font-size:16px; text-align:center; }
     .pbar { width:260px; height:10px; background:#0f1115; border:1px solid #23262d; border-radius:999px; overflow:hidden; }
     .pbar > div { height:100%; width:0%; background:#00c9a7; transition: width .25s ease; }
@@ -142,7 +142,7 @@ PAGE = r"""
 
 <div class="wrap">
 
-  <!-- Баннер (картинку положи в static/brand_header.png) -->
+<!-- Banner ( de afbeelding in static/brand_header.png) -->
 <img class="hero" src="{{ url_for('static', filename='brand_header.svg') }}" alt="banner">
 
   <div class="topbar">
@@ -349,7 +349,7 @@ PAGE = r"""
     if (busy) busy.style.display = 'none';
   });
 
-  // Фильтрация строк по типу событий
+// Filteren van rijen op type gebeurtenis
   document.querySelectorAll('.card .filters').forEach(fltBlock=>{
     fltBlock.addEventListener('change', (e)=>{
       const card = e.currentTarget.closest('.card');
@@ -365,7 +365,7 @@ PAGE = r"""
 
   
 
-  // CSV из таблицы (пер-Видео)
+  // CSV from tabel(per video)
   function tableToCSV(table) {
     const rows = Array.from(table.querySelectorAll('tr'));
     const cellsToText = cells => cells.map(td => {
@@ -401,7 +401,7 @@ PAGE = r"""
     });
   }
 
-  // Summary/Events CSV по всем карточкам на странице
+  // Summary/Events CSV пvoor alle kaarten op de pagina
   window.downloadSummaryPage = function() {
     const cards = Array.from(document.querySelectorAll('.card[data-file]'));
     const rows = [["video_file","video_duration_hms","errors_count","covered_defects_hms","damage_percent"]];
@@ -447,7 +447,7 @@ def allowed_file(filename: str) -> bool:
     return os.path.splitext(filename)[1].lower() in ALLOWED_EXT
 
 def analyze_one(filepath: str):
-    """Запускает detect_* и готовит данные для фронта (только для переданных файлов)."""
+    """Start detect_* en bereidt data voor de frontend (alleen voor de aangeleverde bestanden)."""
     video_duration = core.get_video_duration_seconds(filepath)
 
     all_results = []
@@ -490,12 +490,12 @@ def analyze_one(filepath: str):
 
 @app.get("/")
 def index():
-    # Пустая форма, НИЧЕГО не анализируем
+    # without nothig, do nothing
     return render_template_string(PAGE, results=None)
 
 @app.get("/result")
 def result():
-    # Показываем результаты из сессии (PRG)
+# Resultaten uit de sessie weergeven (PRG)
     results = session.get('last_results')
     return render_template_string(PAGE, results=results)
 
@@ -521,7 +521,7 @@ def analyze():
         f.save(save_path)
         any_saved = True
 
-        # анализируем только что загруженный файл
+# Alleen het zojuist geüploade bestand analyseren
         res = analyze_one(save_path)
         res.update({
             "filename": fname,
@@ -533,13 +533,13 @@ def analyze():
         flash("Niets geüpload.")
         return redirect(url_for("index"))
 
-    # Сохраняем результаты в сессии и делаем PRG → /result
+# Resultaten in de sessie opslaan en PRG uitvoeren → /result
     session['last_results'] = results
     return redirect(url_for("result"))
 
 @app.post("/delete")
 def delete():
-    # Удаляем файл из uploads/ и из текущих результатов в сессии
+# Bestand verwijderen uit uploads/ en uit de huidige resultaten in de sessie
     fname = request.form.get("filename", "")
     if not fname:
         flash("Geen bestandsnaam.")
@@ -551,7 +551,7 @@ def delete():
     else:
         flash("Bestand niet gevonden.")
 
-    # Обновим результаты в сессии (уберём карточку)
+# Resultaten in de sessie bijwerken (kaart verwijderen)
     if 'last_results' in session and isinstance(session['last_results'], list):
         session['last_results'] = [r for r in session['last_results'] if r.get('filename') != fname]
 

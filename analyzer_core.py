@@ -5,21 +5,21 @@ import os
 import re
 import csv
 import cv2
-import numpy as np
+import numpy as np 
 import subprocess
 import sys
 from datetime import timedelta
 from scipy.fft import rfft, rfftfreq
 from scipy.io import wavfile
 
-# tqdm: если нет в системе — работаем без прогресса
+# tqdm: als het niet in het systeem zit , werken we zonder voortgang
 try:
     from tqdm import tqdm
 except Exception:  # ImportError
     def tqdm(iterable=None, **kwargs):
         return iterable if iterable is not None else range(0)
 
-# чтобы вывод появлялся сразу (без буферизации)
+# zodat de uitvoer direct verschijnt (zonder buffering)
 try:
     sys.stdout.reconfigure(line_buffering=True)
 except Exception:
@@ -30,19 +30,19 @@ except Exception:
 # =======================
 VIDEO_FOLDER = "./videos"
 
-OUTPUT_CSV_EVENTS = "report_black_glitch_tone2.csv"   # подробный CSV по событиям (как раньше)
-OUTPUT_CSV_SUMMARY = "report_summary.csv"             # сводка по каждому видео
+OUTPUT_CSV_EVENTS = "report_black_glitch_tone2.csv"   # gedetailleerde CSV over gebeurtenissen 
+OUTPUT_CSV_SUMMARY = "report_summary.csv"             # samenvatting per video
 
 TEMP_AUDIO = "temp_audio.wav"
 
-# Пороги/параметры
-MIN_GLITCH_DURATION = 10          # сек (для GLITCH и RUIS/STRIPES)
-BLACKDETECT_MIN_DURATION = 10     # сек
-FREEZE_MIN_DURATION = 5           # сек
-TONE_MIN_DURATION = 5             # сек
+# Drempels/parameters
+MIN_GLITCH_DURATION = 10          # sec (for GLITCH и RUIS/STRIPES)
+BLACKDETECT_MIN_DURATION = 10     # sec
+FREEZE_MIN_DURATION = 5           # sec
+TONE_MIN_DURATION = 5             # sec
 
-# blackdetect — чувствительнее к почти-чёрному
-BLACKDETECT_PIX_TH = 0.10         # пиксель «чёрный», если Y < 10% (~25/255)
+# blackdetect — gevoeliger voor bijna-zwart
+BLACKDETECT_PIX_TH = 0.10         # pixel is 'zwart' als Y < 10% (~25/255)
 BLACKDETECT_PIC_TH = 0.98
 
 # 1 kHz
@@ -55,7 +55,7 @@ RUIS_LAP_VAR_MIN = 120.0          # «шумность» кадра через �
 RUIS_STRIPE_STD_MIN = 10.0        # «полосатость» (std средних по столбцам)
 RUIS_FPS_SAMPLE = 1               # брать ~1 кадр/сек для скорости
 
-# Какие расширения считаем видео
+# Welke extensies beschouwen we als video
 VIDEO_EXTS = (".mp4", ".mov", ".mkv", ".avi", ".m4v")
 
 
@@ -87,7 +87,7 @@ def natural_sort_key(s: str):
     return [int(t) if t.isdigit() else t.lower() for t in re.findall(r'\d+|\D+', s)]
 
 def get_video_duration_seconds(filepath: str) -> float:
-    """Сначала ffprobe, если нет — OpenCV."""
+    """eerst ffprobe, als het werkt niet — OpenCV."""
     try:
         cmd = [
             "ffprobe", "-v", "error", "-show_entries", "format=duration",
@@ -107,14 +107,14 @@ def get_video_duration_seconds(filepath: str) -> float:
     return float(frames / fps) if fps > 0 else 0.0
 
 def merge_intervals(intervals):
-    """Объединяет пересекающиеся интервалы [(start_sec, end_sec), ...]."""
+    """Voegt overlappende intervallen samen ✅ [(start_sec, end_sec), ...]."""
     if not intervals:
         return []
     intervals = sorted(intervals, key=lambda x: x[0])
     merged = [list(intervals[0])]
     for start, end in intervals[1:]:
         last_start, last_end = merged[-1]
-        if start <= last_end:  # пересекаются или касаются
+        if start <= last_end:  # overlappen of raken elkaar
             merged[-1][1] = max(last_end, end)
         else:
             merged.append([start, end])
@@ -154,7 +154,7 @@ def detect_black_segments(filepath):
 
 
 def detect_glitches(filepath, crop_top_ratio=0.0):
-    """Простые цветовые аномалии: зелёный/розовый/пересвет."""
+    """Eenvoudige kleurafwijkingen: groen/roze/overbelichting."""
     results = []
     cap = cv2.VideoCapture(filepath)
     fps = cap.get(cv2.CAP_PROP_FPS) or 0.0
@@ -316,6 +316,9 @@ def detect_ruis_gray_stripes(filepath,
     Серый экран с шумом/полосами (VHS-ruis/strepen):
     - Низкая насыщенность (серость)
     - Шумность/полосатость по Лапласиану или std столбцов
+     Grijs scherm met ruis/strepen (VHS-ruis/strepen):
+    Lage verzadiging (grijsheid)
+    Ruis-/streepvorming op basis van de Laplaciaan of de standaardafwijking per kolom (std)
     """
     results = []
     cap = cv2.VideoCapture(filepath)
@@ -330,7 +333,7 @@ def detect_ruis_gray_stripes(filepath,
     seg_start_t = 0.0
 
     def frame_score(img_bgr):
-        # downscale до высоты ~480 для скорости
+        # # downscale naar hoogte ~480 voor snelheid
         h0, w0 = img_bgr.shape[:2]
         scale = 480.0 / max(1, h0)
         if scale < 1.0:
@@ -377,7 +380,7 @@ def detect_ruis_gray_stripes(filepath,
                 })
             in_ruis = False
 
-    # если сегмент тянется до конца
+# als het segment tot het einde doorloopt
     if in_ruis:
         t = frames / fps
         dur = t - seg_start_t
@@ -398,7 +401,7 @@ def detect_ruis_gray_stripes(filepath,
 #     MAIN PIPELINE
 # =======================
 def main():
-    # Подготовим CSV
+    # Laten we de csv voorbereiden
     with open(OUTPUT_CSV_EVENTS, mode='w', newline='') as events_csv, \
          open(OUTPUT_CSV_SUMMARY, mode='w', newline='') as summary_csv:
 
@@ -409,7 +412,8 @@ def main():
         summary_writer.writerow(['video_file', 'video_duration_sec', 'video_duration_mmss',
                                  'errors_count', 'errors_total_sec', 'errors_total_mmss', 'damage_percent'])
 
-        # Очередь: натурально отсортированные видео
+        # Wachtrij: natuurlijk gesorteerde video’s
+
         video_files = sorted(
             [f for f in os.listdir(VIDEO_FOLDER) if f.lower().endswith(VIDEO_EXTS)],
             key=natural_sort_key
@@ -419,16 +423,18 @@ def main():
             filepath = os.path.join(VIDEO_FOLDER, filename)
             print(f"\n🎨 Start analyse van {filename}...", flush=True)
 
-            # длительность видео
+            # duur van de video
+
             video_duration = get_video_duration_seconds(filepath)
 
-            # собираем все результаты
+            # alle resultaten verzamelen
+
             all_results = []
             all_results += detect_black_segments(filepath)
-            all_results += detect_glitches(filepath)            # цветовые глитчи
-            all_results += detect_freezes(filepath)             # фризы
+            all_results += detect_glitches(filepath)            # kleurglitches
+            all_results += detect_freezes(filepath)             # freezes
             all_results += detect_1khz_tone(filepath)           # 1 kHz
-            all_results += detect_ruis_gray_stripes(filepath)   # серый шум/полосы
+            all_results += detect_ruis_gray_stripes(filepath)   # grijze ruis/strepen 
 
             print(f"▶️ Verwerken: {filename}")
             if all_results:
@@ -443,29 +449,30 @@ def main():
                         round(float(r["duration"]), 2), r["details"]
                     ])
 
-                # Форматы для CSV (mm:ss) как раньше
+                # Formaten voor CSV (mm:ss) 
                 total_mmss = seconds_to_mmss(total_defect_sec)
                 dur_mmss = seconds_to_mmss(video_duration) if video_duration > 0 else "00:00"
 
-                # Новые форматы для печати (hh:mm:ss)
+                # Nieuwe formaten voor afdrukken (hh:mm:ss)
+
                 total_hms = to_hms(total_defect_sec)
                 video_hms = to_hms(video_duration) if video_duration > 0 else "00:00:00"
 
-                # === ВАЖНО: считаем покрытие таймлайна (объединённые интервалы) ===
+                # ===  BELANGRIJK: we berekenen de dekking van de tijdlijn (samengevoegde intervallen) ===
                 intervals = [(hms_to_seconds(r['start']), hms_to_seconds(r['end'])) for r in all_results]
                 merged = merge_intervals(intervals)
                 covered_sec = sum(e - s for s, e in merged)
 
                 damage_percent = (covered_sec / video_duration * 100.0) if video_duration > 0 else 0.0
 
-                # Финальная строка: сумма длительностей + % по покрытию
+                # Eindregel: som van de duur + % volgens dekking
                 print(
                     f"📊 Totaal: {len(all_results)} fouten, totaalduur {total_hms} "
                     f"(= {int(round(total_defect_sec))} sec) — Video {video_hms}; "
                     f"Beschadiging: {damage_percent:.2f}%"
                 )
 
-                # CSV-сводка без изменения структуры
+                # CSV-samenvatting zonder de structuur te wijzigen
                 summary_writer.writerow([
                     filename,
                     round(video_duration, 2),
