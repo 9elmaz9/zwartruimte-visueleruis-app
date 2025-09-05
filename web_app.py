@@ -12,7 +12,7 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
-try:
+try: 
     core = importlib.import_module("analyzer_core")
 except Exception as e:
     raise RuntimeError("Het is niet gelukt om analyzer_core.py te importeren naast web_app.py") from e
@@ -42,6 +42,8 @@ PAGE = r"""
 <head>
   <meta charset="utf-8">
   <title>Zwartruimte – Upload & Analyse</title>
+  <link rel="icon" type="image/x-icon" href="https://meemoo.be/favicon.ico">
+  <link rel="shortcut icon" href="https://meemoo.be/favicon.ico">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     :root { color-scheme: dark; }
@@ -492,6 +494,11 @@ def analyze_one(filepath: str):
 def index():
     # without nothig, do nothing
     return render_template_string(PAGE, results=None)
+
+@app.get("/favicon.ico")
+def favicon():
+    return redirect("https://meemoo.be/favicon.ico", code=302)
+
 
 @app.get("/result")
 def result():
