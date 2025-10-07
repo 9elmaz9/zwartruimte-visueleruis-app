@@ -49,11 +49,14 @@ BLACKDETECT_PIC_TH = 0.98
 TONE_HZ = 1000
 HZ_TOLERANCE = 50
 
-# RUIS/STRIPES (серый + шум/полосы)
-RUIS_SAT_MAX = 40.0               # средняя насыщенность (S) в HSV <= 40 → «серый»
-RUIS_LAP_VAR_MIN = 120.0          # «шумность» кадра через Лапласиан
-RUIS_STRIPE_STD_MIN = 10.0        # «полосатость» (std средних по столбцам)
-RUIS_FPS_SAMPLE = 1               # брать ~1 кадр/сек для скорости
+
+
+# RUIS/STRIPES (gray + noise/stripes)
+RUIS_SAT_MAX = 40.0               # average saturation (S) in HSV <= 40 → considered "gray"
+RUIS_LAP_VAR_MIN = 120.0          # frame "noisiness" based on Laplacian variance
+RUIS_STRIPE_STD_MIN = 10.0        # "stripiness" based on std of column-wise means
+RUIS_FPS_SAMPLE = 1               # sample approximately 1 frame per second for speed
+
 
 # Welke extensies beschouwen we als video
 VIDEO_EXTS = (".mp4", ".mov", ".mkv", ".avi", ".m4v")
@@ -492,7 +495,8 @@ def main():
                     0, 0.0, "00:00", 0.0
                 ])
 
-    print(f"\n✅ Klaar! Подробный CSV: {OUTPUT_CSV_EVENTS}\n✅ Сводка по видео: {OUTPUT_CSV_SUMMARY}", flush=True)
+    print(f"\n✅ Done! Detailed CSV: {OUTPUT_CSV_EVENTS}\n✅ Video summary: {OUTPUT_CSV_SUMMARY}", flush=True)
+
 
 
 if __name__ == "__main__":
