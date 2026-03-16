@@ -4,3 +4,5 @@
 
 ## About
 This project detects black frames, glitches, silence, and other issues in archival VHS material using **FFmpeg**, **OpenCV**, and **Python**.
+
+
